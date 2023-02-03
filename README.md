@@ -34,8 +34,7 @@ Run `R/00.status_quo.R` to generate the annual burden under current strategies g
   
 ### 3. Combined strategies: 
  - Run `R/03.vary_vac_treat.R` to generate the total burden between 2025 to 2033 given different combinations of vaccine and treatment coverage. 
- - Run `R/Fig3.R` to generate and plot the annual burden under combined strategies. 
   
 ### 4. National burden given current statewide strategies
  - Run `04.baseline_by_state.R`
- - Run `R/Fig4.R` to generate and plot the annual burden if current statewide strategies are applied nationally. 
+ - Run `R/Fig_3_4.R` to generate and plot the annual burden under combined strategies and if current statewide strategies are applied nationally. 
