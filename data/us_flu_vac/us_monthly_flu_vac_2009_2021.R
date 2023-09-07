@@ -1,5 +1,5 @@
 rm(list = ls())
-setwd("~/github/covid19-post-vaccination-burden")
+setwd("~/github/covid-treatment-psu-cidd/")
 library(dplyr)
 flu_raw = read.csv('data/us_flu_vac/Influenza_Vaccination_Coverage_for_All_Ages__6__Months_.csv')
 

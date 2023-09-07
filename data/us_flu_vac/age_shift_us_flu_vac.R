@@ -1,7 +1,7 @@
 rm(list = ls())
 library(openxlsx)
 library(dplyr)
-setwd("~/github/covid19-post-vaccination-burden/")
+setwd("~/github/covid-treatment-psu-cidd/")
 load('data/us_flu_vac/us_mean_interpolated_flu_vac_across2010_2021_by_age.Rdata')
 raw_us_pop = read.xlsx('data/US/us_census/2020_us_census.xlsx')
 
@@ -168,10 +168,10 @@ ggplot(rela_vac_by_age_df) +
 ggsave(filename = 'data/us_flu_vac/rela_flu_vac_by_age.jpg',
        width = 6,height = 4,units = 'in')
 
- flu_vac_by_age = rela_vac_by_age
+flu_vac_by_age = rela_vac_by_age
 
 save(flu_vac_by_age,
-     file = 'R/data/us_flu_vac/relative_flu_vac_perc_by_age.Rdata')
+     file = 'data/us_flu_vac/relative_flu_vac_perc_by_age.Rdata')
 
 
 
