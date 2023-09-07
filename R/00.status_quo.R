@@ -1,11 +1,9 @@
-## Under cpp-v10 (with V class), the status quo condition during 2022-03-01 to 2023-03-01 ##
-
 ###############################################################################
 ### 1. Preliminaries
 ###############################################################################
 rm(list = ls())
 ### set up working dir to be github repo 
-setwd('~/github/covid19-post-vaccination-burden')
+setwd('~/github/covid-treatment-psu-cidd/')
 
 ### necessary packages
 ## library for spline-based expansions
@@ -18,8 +16,8 @@ library(ggplot2)
 library(metR)
 
 ### load functions
-source("R/cpp-v10/traj.from.params-v7-TT.R")
-source("R/cpp-v10/main_traj.R")
+source("R/functions/traj.from.params-v7-TT.R")
+source("R/functions/main_traj.R")
 source("R/functions/run_simulation_functions.R")
 source("R/functions/generate_beta_func2.R")
 source('R/functions/US_scale_up.R')
@@ -27,14 +25,14 @@ source('R/functions/US_scale_up.R')
 
 #### run simulation.R and baseline_params.func should be under the same dir ###
 # when dur = 365, add mean_beta argument #
-source("R/cpp-v10/main/20230113/calibrate/baseline_parameters_RI365.R")
-# source("R/cpp-v10/main/20230113/calibrate/baseline_parameters_RI548.R")
-# source("R/cpp-v10/main/20230113/calibrate/baseline_parameters_RI730.R")
+# source("R/calibrate/baseline_parameters_RI365.R")
+source("R/calibrate/baseline_parameters_RI548.R")
+# source("R/calibrate/baseline_parameters_RI730.R")
 
 ### load the tv-flu-vac-cov ###
 load('data/us_flu_vac/relative_flu_vac_perc_by_age.Rdata')
 
-odepath = 'cpp-v10-v-class/'
+odepath = 'cpp-v10/'
 
 #### status quo parameters ###
 # baseline beta is during entire Omicron: 2021/12/21 - 2022/11/30
@@ -46,7 +44,7 @@ params <- generate_baseline_params_RI(odepath = odepath,
                                       treat_endday = 1156,
                                       beta_base_period_start = base_beta_start,# baseline beta is during entire Omicron: 2021/12/21 - 2022/11/30
                                       beta_base_period = base_period,
-                                      mean_beta = 0.4283 * 1.2,
+                                      # mean_beta = 0.4283 * 1.2,
                                       sim_time = 91, # simulate until 03/01/2023
                                       beta_transition_period = 30,
                                       beta_multiplier = 1,
@@ -56,7 +54,7 @@ params <- generate_baseline_params_RI(odepath = odepath,
 
 vac_cover = 0.49 # conservative assumption of national coverage: 36%; optimistic: 49%
 
-#### Add current vaccine coverage: 36% from Mar'22 to Mar'23
+#### Add current vaccine coverage: 49% from Mar'22 to Mar'23
 params_vac = vac_cover_generator(cover = vac_cover,
                                       pop_by_age = get_pop_by_age(loc = 'RI'),
                                       vac_tv_type = 'scenarios',
@@ -77,9 +75,6 @@ names(treat_cover) = c("tv-treat-cov-10_1",
 
 current_params = param_changer(change_params = treat_cover,
                                baseline_params = params_vac)
-current_params_548 = current_params
-
-# save(current_params_548,file = 'R/cpp-v10/main/20230113/params/status_quo_params548.Rdata')
 
 status_quo_traj = traj.from.params(beta = current_params$beta,
                                    params = current_params$params,
@@ -118,7 +113,7 @@ primary_traj$cumu_death[primary_traj$date == enddate] -
 base_beta_start = 851
 base_period = 60
 
-opt_beta = generate_beta2(start_beta = current_params_548$beta,
+opt_beta = generate_beta2(start_beta = current_params$beta,
                           base_period_start = base_beta_start, 
                           base_period = base_period,
                           extend_period = 3654,
@@ -127,7 +122,7 @@ opt_beta = generate_beta2(start_beta = current_params_548$beta,
                           seas_dur = 123, 
                           seas_start = 210)
 
-neutral_beta = generate_beta2(start_beta = current_params_548$beta,
+neutral_beta = generate_beta2(start_beta = current_params$beta,
                               base_period_start = base_beta_start, 
                               base_period = base_period,
                               extend_period = 3654,
@@ -136,7 +131,7 @@ neutral_beta = generate_beta2(start_beta = current_params_548$beta,
                               seas_dur = 123, 
                               seas_start = 210)
 
-pes_beta = generate_beta2(start_beta = current_params_548$beta,
+pes_beta = generate_beta2(start_beta = current_params$beta,
                           base_period_start = base_beta_start, 
                           base_period = base_period,
                           extend_period = 3654,
@@ -176,21 +171,21 @@ all_betas = lapply(1:length(all_betas),function(x) {
 })
 
 #### generate initial params for each scenario, need to append future cov ###
-all_params_548 = lapply(1:length(all_betas),function(x) {
+all_params = lapply(1:length(all_betas),function(x) {
   
-  current_params_548$beta = all_betas[[x]]
-  current_params_548$tf = length(all_betas[[x]]) + 60
+  current_params$beta = all_betas[[x]]
+  current_params$tf = length(all_betas[[x]]) + 60
   
-  return(current_params_548)
+  return(current_params)
   
 })
-names(all_params_548) = c('opt','neu','pes')
+names(all_params) = c('opt','neu','pes')
 
-all_params_365 = all_params_548
-save(all_params_365,file = 'R/cpp-v10/main/20230113/params/initial_params_365_80norebound.Rdata')
+all_params_548 = all_params
+save(all_params_548,file = 'R/params/initial_params_548.Rdata')
 
 #### Projections under current strategies ####
-neu_params = all_params_548$neu
+neu_params = all_params$neu
 
 future_treat_cov = rep(0.137,8)
 names(future_treat_cov) = c("tv-treat-cov-10_2",
@@ -223,24 +218,6 @@ all_traj = traj.from.params(beta = neu_params$beta,
                                  symp = neu_params$symp,
                                  mean.report.rate = neu_params$mean.report.rate)
 
-### trajectories of RI ###
-# primary_traj_ri = get_ode_main_traj(all_traj,
-#                                  scale_up = F,
-#                                  scaled_metrics = c('cumu_cases',
-#                                                     'cumu_hosp',
-#                                                     'cumu_death'))
-# 
-# sus_traj = data.frame(date = as.Date('2020-01-01') + all_traj[,1] - 1,
-#                       sus = rowSums(all_traj[,c(2:10)]))
-# 
-# rec_traj = data.frame(date = as.Date('2020-01-01') + all_traj[,1] - 1,
-#                       rec = rowSums(all_traj[,c(272:280)]))
-# 
-# rec_hosp_traj = data.frame(date = as.Date('2020-01-01') + all_traj[,1] - 1,
-#                            rec = rowSums(all_traj[,c(281:289)]))
-# 
-# vac_traj = data.frame(date = as.Date('2020-01-01') + all_traj[,1] - 1,
-#                       rec = rowSums(all_traj[,c(290:298)]))
 
 ### trajectories of US ###
 primary_traj = get_ode_main_traj(all_traj,

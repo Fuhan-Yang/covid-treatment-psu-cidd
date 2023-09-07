@@ -3,11 +3,10 @@ library(dplyr)
 library(ggplot2)
 library(RColorBrewer)
 ### set up working dir to be github repo 
-setwd('~/github/covid19-post-vaccination-burden')
+setwd('~/github/covid-treatment-psu-cidd/')
 
-load('R/cpp-v10/Rdata/20230113/vac_only_summaries_sim548_88VE_0.66-0.7.Rdata')
-# load('R/cpp-v10/Rdata/20230113/vac_only_summaries_sim365_0.01granule2.Rdata')
-
+load('R/Rdata/vac_only_summaries_sim365.Rdata')
+# load('R/Rdata/vac_only_summaries_sim548.Rdata')
 
 ### annual numbers: 2025 - 2033 ###
 years = 8
@@ -50,10 +49,8 @@ for(scene in unique(annual_all$.id)) {
   new_annual_all = rbind(new_annual_all,df)
 }
 
-save(new_annual_all, file = 'R/cpp-v10/Rdata/20230113/vac_averted_summaries_365.Rdata')
 
 #### plot the annual numbers #####
-load('R/cpp-v10/Rdata/20230113/vac_averted_summaries_365.Rdata')
 
 plot_annual_all = new_annual_all
 plot_annual_all$vac = round(plot_annual_all$vac,3)
@@ -95,40 +92,5 @@ for(i in 1:length(primary_metrics)) {
           text = element_text(size = 14),
           axis.text = element_text(size = 14))
   if(i == 3) {p = p + scale_x_discrete(expand = c(0.16,0.16))}
-  ggsave(p, filename = paste0('R/cpp-v10/outputs/20230113/annual_',primary_metrics[i],'_summary_vac_only_365.jpg'),
-         width = 6,height = 3.5,
-         units = 'in')
+  p
 }
-
-
-##### plot averted burden ########
-# plot_annual_all = new_annual_all
-# plot_annual_all = plot_annual_all[-which(plot_annual_all$vac == 0.49),]
-# 
-# primary_summary_metrics = c('diff_cases','diff_hosp','diff_death')
-# plot_annual_all$vac = as.character(plot_annual_all$vac)
-# plot_annual_all$scene = factor(plot_annual_all$.id, levels = c('opt','neu','pes'),
-#                                labels = c('Optimistic','Neutral','Pessimistic'))
-# ylabs = c('Annual Cases (millions)','Annual Hospitalizations (thousands)','Annual Deaths (thousands)')
-# palettes = c('Blues','Purples','YlOrBr')
-# 
-# for(i in 1:length(primary_summary_metrics)) {
-#   
-#   ggplot(plot_annual_all) +
-#     geom_col(aes_string(x = 'scene',
-#                         y = primary_summary_metrics[i],
-#                         fill = 'vac'),
-#              position = 'dodge') +
-#     scale_y_continuous(n.breaks = 10) + 
-#     scale_fill_brewer(palette = palettes[i],
-#                       name = 'Vaccination\nCoverage(%)',
-#                       labels = as.numeric(unique(plot_annual_all$vac))*100) +
-#     xlab('') +
-#     ylab(ylabs[i]) + 
-#     theme_bw() 
-#   ggsave(filename = paste0('R/cpp-v10/outputs/20230113/',primary_summary_metrics[i],'_summary_vac_only_365.jpg'),
-#          width = 8,height = 4,
-#          units = 'in')
-# }
-# 
-# 
